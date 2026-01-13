@@ -12,7 +12,7 @@ from main.useCases.search_use_case import SearchUseCase
 from main.ports.IServices.apify_service import ApifyService
 
 # Configurações (substitua com suas credenciais)
-API_TOKEN = 'seu_token_apify_aqui'  # Substitua pelo seu token Apify
+API_TOKEN = os.getenv('APIFY_API_TOKEN')  # Token Apify via variável de ambiente
 ACTOR_ID = 'apify/instagram-comment-scraper'  # Actor para comentários do Instagram
 
 # Instanciar dependências
