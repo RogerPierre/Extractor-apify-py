@@ -13,7 +13,7 @@ from urllib.parse import urlparse
 # Implementação da interface Requisition para Apify
 
 
-class ApifyRequestInstagram(Requisition):
+class ApifyRequestTiktok(Requisition):
     def __init__(self, api_token: str, task_id: str, input_url: IInputUrl):
         self.client = ApifyService().create_A_Request(api_token)
         self.task_id = task_id
@@ -22,9 +22,15 @@ class ApifyRequestInstagram(Requisition):
     def fetch(self) -> list:
         try:
             request = {
-                "directUrls": self.input_url.get_url(),
-                "resultsLimit": 150,
-                "isNewestComments": True,
+              "commentsPerPost": 50,
+              "excludePinnedPosts": False,
+              "maxRepliesPerComment": 2,
+              "postURLs": self.input_url.get_url(),
+              "resultsPerPage": 100,
+              "profileScrapeSections": [
+                "videos"
+              ],
+              "profileSorting": "latest"
             }
             run = self.client.actor(self.task_id).call(run_input=request)
             items = self.client.dataset(run.get("defaultDatasetId"))
@@ -79,12 +85,12 @@ class CommentsParser(OutputComents):
                         if not t_str:
                             continue
 
-                        timestamp = self._safe_get(node, ['createdAt', 'created_at', 'date', 'timestamp'])
-                        author = self._safe_get(node, ['author', 'user', 'username', 'from', 'owner'])
+                        timestamp = self._safe_get(node, ['createdAt', 'created_at', 'date', 'timestamp',"createTimeISO"])
+                        author = self._safe_get(node, ['author', 'user', 'username', 'from', 'owner',"uniqueId"])
                         if isinstance(author, dict):
                             author = self._safe_get(author, ['name', 'username', 'fullName']) or None
-                        likes = self._safe_get(node, ['likeCount', 'likes', 'like_count', 'likes_count'])
-                        replies = self._safe_get(node, ['replyCount', 'replies', 'replies_count'])
+                        likes = self._safe_get(node, ['likeCount', 'likes', 'like_count', 'likes_count',"diggCount"])
+                        replies = self._safe_get(node, ['replyCount', 'replies', 'replies_count',"replyCommentTotal"])
 
                         comment = {
                             'text': t_str,
@@ -131,17 +137,7 @@ class CommentsParser(OutputComents):
                 continue
         source_hint = None
         if domains:
-            dom = next(iter(domains))
-            if 'instagram' in dom:
-                source_hint = 'instagram'
-            elif 'facebook' in dom:
-                source_hint = 'facebook'
-            elif 'x'== dom:
-                source_hint = 'x'
-            elif 'tiktok' in dom: 
-                source_hint = 'tiktok'
-            else:
-                source_hint = dom
+            source_hint = "tiktok"
 
         for c in comments:
             if not c.get('source'):
@@ -155,4 +151,6 @@ class CommentsParser(OutputComents):
                 writer.writerow(row)
 
         return filename
+
+
 
