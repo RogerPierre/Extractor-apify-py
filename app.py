@@ -1,6 +1,4 @@
-from main import *
-from main.Middler.Aplication.apify import extract_comments
+from main.Middler.Aplication.apify_Instagram import extract_comments
 
 
-request= extract_comments("Token_apify", "Task_id", ["url1", "url2"])
-print(request)
+request= extract_comments("token", "ator", ["url1", "url2"])
